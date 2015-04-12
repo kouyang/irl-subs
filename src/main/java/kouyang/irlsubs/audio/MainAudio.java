@@ -94,7 +94,7 @@ public class MainAudio extends Thread {
 		microphone.close();
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		MainAudio m = new MainAudio(1);
 		
 		PipedInputStream[] streams = m.initialize();
@@ -104,20 +104,16 @@ public class MainAudio extends Thread {
 		
 		m.start();
 		sr.start();
-		/* try {
-			Thread.sleep(5000);
-			
-			AudioInputStream ais = new AudioInputStream(streams[0], new AudioFormat(
-					AudioFormat.Encoding.PCM_SIGNED,
-					fSampleRate * 2, iBytesPerSample * 8, 1, frameSize / 2, fSampleRate * 2, false), (int)(frameSize / 2 * fSampleRate * 5));
-			AudioSystem.write(ais, Type.WAVE, new File("sound.wav"));
+		try {
+			while (System.in.available() < 1) ;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
+			sr.quit();
 			m.quit();
-		} */
+		} 
 		
-		System.out.println("Ending...");
+		// System.out.println("Ending...");
 	}
 
 }
