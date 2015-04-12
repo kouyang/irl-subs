@@ -23,6 +23,8 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -75,7 +77,7 @@ public class WebCamAppLauncher extends Application {
 	private Button btnCameraDispose;
 
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(final Stage primaryStage) {
 		primaryStage
 				.setTitle("Connecting Camera Device Using Webcam Capture API");
 
@@ -91,10 +93,13 @@ public class WebCamAppLauncher extends Application {
 		imgWebCamHBox = new HBox();
 		imgWebCamCapturedImage1 = new ImageView();
 		imgWebCamCapturedImage2 = new ImageView();
+		imgWebCamHBox.setAlignment(Pos.CENTER);
 		imgWebCamHBox.getChildren().addAll(imgWebCamCapturedImage1,
 				imgWebCamCapturedImage2);
+		BorderPane.setAlignment(imgWebCamHBox, Pos.BOTTOM_CENTER);
 		webCamPane.setCenter(imgWebCamHBox);
 		root.setCenter(webCamPane);
+		
 		createTopPanel();
 		bottomCameraControlPane = new FlowPane();
 		bottomCameraControlPane.setOrientation(Orientation.HORIZONTAL);
@@ -110,6 +115,17 @@ public class WebCamAppLauncher extends Application {
 		primaryStage.setWidth(1200);
 		primaryStage.setHeight(720);
 		primaryStage.centerOnScreen();
+//		primaryStage.setFullScreen(true);
+		
+		primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent ke) {
+				if (ke.getCode() == KeyCode.F11) {
+					primaryStage.setFullScreen(!primaryStage.isFullScreen());
+				}
+			}
+		});
+		
 		primaryStage.show();
 
 		Platform.runLater(new Runnable() {
