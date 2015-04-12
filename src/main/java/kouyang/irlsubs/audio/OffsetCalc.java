@@ -82,8 +82,6 @@ public class OffsetCalc extends Thread {
 				rightSamples[i] = (double)soundSamples[2 * i + 1];
 			}
 	
-	
-	
 			// Start Fourier Transform
 			FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
 	

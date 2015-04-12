@@ -1,6 +1,7 @@
 package kouyang.irlsubs;
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.io.PipedInputStream;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -38,6 +39,9 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import kouyang.irlsubs.audio.MainAudio;
+import kouyang.irlsubs.audio.OffsetCalc;
+import kouyang.irlsubs.audio.SpeechRec;
 
 import com.github.sarxos.webcam.Webcam;
 
@@ -46,6 +50,14 @@ public class WebCamAppLauncher extends Application {
 	/** Dimensions of the webcam. */
 	private static final int SCALE = 30;
 	private static final Dimension WEBCAM_DIMENSIONS = new Dimension(SCALE * 16, SCALE * 9);
+
+	// has a webcam been selected?
+	private boolean webcamSelected = false;
+	
+	// Audio CLasses
+	private MainAudio mainAudio;
+	private OffsetCalc offsetCalc;
+	private SpeechRec speechRec;
 
 	private class WebCamInfo {
 
@@ -203,7 +215,7 @@ public class WebCamAppLauncher extends Application {
 		text2.wrappingWidthProperty().bind(width);
 	}
 
-	private void createTopPanel() {
+	private void createTopPanel() { 
 
 		int webCamCounter = 0;
 		Label lbInfoLabel = new Label("Select Your WebCam Camera");
@@ -231,6 +243,13 @@ public class WebCamAppLauncher extends Application {
 							ObservableValue<? extends WebCamInfo> arg0,
 							WebCamInfo arg1, WebCamInfo arg2) {
 						if (arg2 != null) {
+
+							// start speech recognition
+							if (!webcamSelected) {
+								webcamSelected = true;
+								startSpeechRecognition();
+							}
+
 							System.out.println("WebCam Index: "
 									+ arg2.getWebCamIndex() + ": WebCam Name:"
 									+ arg2.getWebCamName());
@@ -354,5 +373,19 @@ public class WebCamAppLauncher extends Application {
 
 	public static void main(String[] args) {
 		launch(args);
+	}
+
+	private void startSpeechRecognition() {
+		// Initialize 2 Streams
+		mainAudio = new MainAudio(2);
+
+		PipedInputStream[] streams = mainAudio.initialize();
+
+		offsetCalc = new OffsetCalc(0.0762, 1.0, streams[0]);
+		speechRec = new SpeechRec(5.0, streams[1]);
+
+		mainAudio.start();
+		offsetCalc.start();
+		speechRec.start();
 	}
 }

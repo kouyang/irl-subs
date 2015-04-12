@@ -64,6 +64,10 @@ public class MainAudio extends Thread {
 		m_stopped = true;
 	}
 	
+	public AudioFormat getFormat() {
+		return m_format;
+	}
+	
 	@Override
 	public void run() {
 		int numBytesRead;
@@ -86,27 +90,26 @@ public class MainAudio extends Thread {
 		microphone.close();
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		MainAudio m = new MainAudio(1);
 		
 		PipedInputStream[] streams = m.initialize();
 		
-		OffsetCalc oc = new OffsetCalc(0.0762, 1.0, streams[0]);
+		//OffsetCalc oc = new OffsetCalc(0.0762, 1.0, streams[0]);
+		SpeechRec sr = new SpeechRec(5.0, streams[0]);
 		
 		m.start();
-		oc.start();
+		sr.start();
 		try {
-			while(System.in.available() < 1) {
-				Thread.sleep(1000);
-				System.out.println("Angle: " + oc.GetSourceAngle());
-			}
+			while (System.in.available() < 1) ;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			oc.quit();
+			sr.quit();
 			m.quit();
-		}
-		System.out.println("Ending...");
+		} 
+		
+		// System.out.println("Ending...");
 	}
 
 }
