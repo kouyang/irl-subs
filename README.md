@@ -1,35 +1,29 @@
-# JavaFX Example With Webcam Capture API
+# irl-subs - Live subtitles for Oculus Rift
 
-This simple example, generously provided by Rakesh Bhatt ([rakeshbhatt10](https://github.com/rakeshbhatt10)),
-demonstrates how to use Webcam Capture API inside JavaFX application. 
-FXML is not used at all and complete scene structure is composed directly 
-in the Java code. For the FXML demonstration check another example available [here](https://github.com/sarxos/webcam-capture/tree/master/webcam-capture-examples/webcam-capture-javafx-fxml). 
+**irl-subs** is an augmented reality app for Oculus Rift which overlays live subtitles
+over a projected video stream.  The input audio is processed and sent to a speech-to-text
+API and optionally a text translation API, and a marker identifies the sound
+source for each displayed subtitle.
 
-Original project can be found [here](https://github.com/rakeshbhatt10/WebCamJavaFXSampleSarcoxAPI).
-
-Thank you Rakesh!
-
-
-## How To Build
-
-By using Maven:
-
-
-```plain
-$ cd webcam-capture-examples/webcam-capture-javafx
-$ mvn clean package
-```
-
-The executable JAR, together with all required dependencies (inside ```lib``` folder), 
-will be placed in ```target/jfx/app``` directory.
-
-
-## Screenshoots
-
-![javafx1.png](https://raw.githubusercontent.com/sarxos/webcam-capture/master/webcam-capture-examples/webcam-capture-javafx/src/etc/resources/javafx1.png)
-![javafx2.png](https://raw.githubusercontent.com/sarxos/webcam-capture/master/webcam-capture-examples/webcam-capture-javafx/src/etc/resources/javafx2.png)
-
+## Credits
+This software was created by Ethan Gordon ([@egordon](https://github.com/egordon)),
+Davis Liu ([@liuquinlin](https://github.com/liuquinlin)), Jeffrey Han
+([@itdelatrisu](https://github.com/itdelatrisu)), and Karen Ouyang
+([@kouyang](https://github.com/kouyang)) during HackPrinceton Spring 2015.
 
 ## License
+**This software is licensed under the MIT license.**
+Portions of this code are heavily adapted from the [Webcam Capture API](https://github.com/sarxos/webcam-capture),
+which contains the following license:
 
-Copyright (C) 2014 Rakesh Bhatt (https://github.com/rakeshbhatt10)
+Copyright (C) 2012 - 2015 Bartosz Firyn (https://github.com/sarxos)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
