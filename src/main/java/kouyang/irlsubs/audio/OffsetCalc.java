@@ -114,26 +114,11 @@ public class OffsetCalc extends Thread {
 	
 			if (leftmax > leftcorrelation.length / 2) leftmax -= leftcorrelation.length;
 	
-			lock.lock();
-		    try {
 		    	m_offset = (double)leftmax / (double)MainAudio.fSampleRate;
-		    } finally {
-		    	lock.unlock();
-		    }
+		    	double ratio = m_offset * SOUND_SPEED / m_micDistance;
+		    	if (ratio > 1) ratio = 1;
+		    	if (ratio < -1) ratio = -1;
+		    	m_offset = Math.toDegrees(Math.asin(ratio));
 		}
-	}
-	
-	public double GetSourceAngle() {
-		double ret = 0.0;
-		lock.lock();
-	    try {
-	    	double ratio = m_offset * SOUND_SPEED / m_micDistance;
-	    	if (ratio > 1) ratio = 1;
-	    	if (ratio < -1) ratio = -1;
-	    	ret = Math.toDegrees(Math.asin(ratio));
-	    } finally {
-	    	lock.unlock();
-	    }
-	    return ret;
 	}
 }
