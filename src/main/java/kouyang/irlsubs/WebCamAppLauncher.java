@@ -9,6 +9,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -23,7 +24,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -53,6 +53,8 @@ public class WebCamAppLauncher extends Application {
 
 	// has a webcam been selected?
 	private boolean webcamSelected = false;
+
+	private StringProperty subtitleProp;
 	
 	// Audio CLasses
 	private MainAudio mainAudio;
@@ -86,10 +88,26 @@ public class WebCamAppLauncher extends Application {
 		}
 	}
 
+	private class Lang {
+		private String name;
+		private String prefix;
+
+		public Lang(String name, String prefix) {
+			this.name = name;
+			this.prefix = prefix;
+		}
+
+		public String getPrefix() { return prefix; }
+
+		@Override
+		public String toString() { return name; }
+	}
+
 	private FlowPane bottomCameraControlPane;
 	private FlowPane topPane;
 	private BorderPane root;
 	private String cameraListPromptText = "Choose Camera";
+	private String langListPromptText = "Choose Language";
 	private ImageView imgWebCamCapturedImage1, imgWebCamCapturedImage2;
 	private Text text1, text2;
 	private Webcam webCam = null;
@@ -136,11 +154,14 @@ public class WebCamAppLauncher extends Application {
 		GridPane.setHalignment(text1, HPos.CENTER);
 		viewport.add(text1, 0, 2);
 		
+		subtitleProp = text1.textProperty();
+		
 		imgWebCamCapturedImage2 = new ImageView();
 		GridPane.setHalignment(imgWebCamCapturedImage2, HPos.CENTER);
 		viewport.add(imgWebCamCapturedImage2, 1, 1);
 		text2 = new Text();
 		text2.setFont(Font.font("Verdana", FontPosture.REGULAR, 24));
+		text2.textProperty().bind(text1.textProperty());
 		text2.setFill(Color.WHITE);
 		GridPane.setHalignment(text2, HPos.CENTER);
 		viewport.add(text2, 1, 2);
@@ -218,11 +239,11 @@ public class WebCamAppLauncher extends Application {
 	private void createTopPanel() { 
 
 		int webCamCounter = 0;
-		Label lbInfoLabel = new Label("Select Your WebCam Camera");
+//		Label lbInfoLabel = new Label("Select Your WebCam Camera");
 		ObservableList<WebCamInfo> options = FXCollections
 				.observableArrayList();
 
-		topPane.getChildren().add(lbInfoLabel);
+//		topPane.getChildren().add(lbInfoLabel);
 
 		for (Webcam webcam : Webcam.getWebcams()) {
 			WebCamInfo webCamInfo = new WebCamInfo();
@@ -258,6 +279,29 @@ public class WebCamAppLauncher extends Application {
 					}
 				});
 		topPane.getChildren().add(cameraOptions);
+
+		ComboBox<Lang> langOptions = new ComboBox<Lang>();
+		langOptions.setPromptText(langListPromptText);
+		ObservableList<Lang> langs = FXCollections.observableArrayList();
+		langs.add(new Lang("English", "en"));
+		langs.add(new Lang("French", "fr"));
+		langs.add(new Lang("Spanish", "es"));
+		langOptions.setItems(langs);
+		langOptions.getSelectionModel().selectedItemProperty()
+				.addListener(new ChangeListener<Lang>() {
+
+					@Override
+					public void changed(
+							ObservableValue<? extends Lang> arg0,
+							Lang arg1, Lang arg2) {
+						if (arg2 != null) {
+//							System.out.println(arg2.getPrefix());
+							if (speechRec != null)
+								speechRec.setLanguage(arg2.getPrefix());
+						}
+					}
+				});
+		topPane.getChildren().add(langOptions);
 	}
 
 	protected void initializeWebCam(final int webCamIndex) {
@@ -382,7 +426,7 @@ public class WebCamAppLauncher extends Application {
 		PipedInputStream[] streams = mainAudio.initialize();
 
 		offsetCalc = new OffsetCalc(0.0762, 1.0, streams[0]);
-		speechRec = new SpeechRec(5.0, streams[1]);
+		speechRec = new SpeechRec(5.0, streams[1], subtitleProp);
 
 		mainAudio.start();
 		offsetCalc.start();

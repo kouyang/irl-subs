@@ -10,6 +10,9 @@ import java.net.URLEncoder;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javafx.application.Platform;
+import javafx.beans.property.StringProperty;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat;
@@ -29,6 +32,9 @@ public class SpeechRec extends Thread {
 	/** Translation URL. */
 	private static final String TRANSLATION_URL = "https://translate.yandex.net/api/v1.5/tr.json/translate";
 
+	/** Default language (no translation). */
+	private static final String DEFAULT_LANGUAGE = "en";
+
 	// Fields
 	private double m_refresh;
 	private boolean m_stopped;
@@ -45,9 +51,13 @@ public class SpeechRec extends Thread {
 	
 	private Lock lock;
 
-	public SpeechRec(double refresh, PipedInputStream audioData) {
+	private StringProperty subtitleProp;
+	private String lang = DEFAULT_LANGUAGE;
+
+	public SpeechRec(double refresh, PipedInputStream audioData, StringProperty subtitleProp) {
 		m_refresh = refresh;
 		m_audioData = audioData;
+		this.subtitleProp = subtitleProp;
 		
 		m_stopped = false;
 		m_text = "";
@@ -74,7 +84,9 @@ public class SpeechRec extends Thread {
 				lock.lock();
 			    try {
 			    	m_text = getTextFromSpeech(authToken);
-			    	m_text = translateText("fr");
+			    	if (!lang.equals(DEFAULT_LANGUAGE))
+				    	m_text = translateText(lang);
+			    	setSubtitle(m_text);
 			    } finally {
 			    	lock.unlock();
 			    }
@@ -83,6 +95,19 @@ public class SpeechRec extends Thread {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+
+	private void setSubtitle(final String s) {
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				subtitleProp.setValue(s);
+			}
+		});
+	}
+	
+	public void setLanguage(String language) {
+		this.lang = language;
 	}
 	
 	public String getText() {

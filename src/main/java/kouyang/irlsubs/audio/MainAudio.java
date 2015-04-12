@@ -89,27 +89,4 @@ public class MainAudio extends Thread {
 		}
 		microphone.close();
 	}
-	
-	public static void main(String[] args) throws Exception {
-		MainAudio m = new MainAudio(1);
-		
-		PipedInputStream[] streams = m.initialize();
-		
-		//OffsetCalc oc = new OffsetCalc(0.0762, 1.0, streams[0]);
-		SpeechRec sr = new SpeechRec(5.0, streams[0]);
-		
-		m.start();
-		sr.start();
-		try {
-			while (System.in.available() < 1) ;
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			sr.quit();
-			m.quit();
-		} 
-		
-		// System.out.println("Ending...");
-	}
-
 }
