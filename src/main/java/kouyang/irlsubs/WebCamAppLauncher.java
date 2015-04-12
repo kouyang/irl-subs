@@ -31,6 +31,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import com.github.sarxos.webcam.Webcam;
 
@@ -127,18 +128,28 @@ public class WebCamAppLauncher extends Application {
 		primaryStage.centerOnScreen();
 //		primaryStage.setFullScreen(true);
 		
-		primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-			@Override
-			public void handle(KeyEvent ke) {
-				if (ke.getCode() == KeyCode.ESCAPE) {
-					System.exit(0);
-				}
-				if (ke.getCode() == KeyCode.F) {
-					primaryStage.setFullScreen(!primaryStage.isFullScreen());
-				}
-			}
-		});
-		
+		primaryStage.addEventHandler(KeyEvent.KEY_PRESSED,
+				new EventHandler<KeyEvent>() {
+					@Override
+					public void handle(KeyEvent ke) {
+						if (ke.getCode() == KeyCode.ESCAPE) {
+							System.exit(0);
+						}
+						if (ke.getCode() == KeyCode.F) {
+							primaryStage.setFullScreen(!primaryStage
+									.isFullScreen());
+						}
+					}
+				});
+
+		primaryStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST,
+				new EventHandler<WindowEvent>() {
+					@Override
+					public void handle(WindowEvent we) {
+						System.exit(0);
+					}
+				});
+
 		primaryStage.show();
 
 		Platform.runLater(new Runnable() {
