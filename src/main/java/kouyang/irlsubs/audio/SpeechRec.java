@@ -3,7 +3,6 @@ package kouyang.irlsubs.audio;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.net.URL;
@@ -16,9 +15,15 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SpeechRec extends Thread {
+	/** OAuth URL. */
+	private static final String OAUTH_URL = "https://api.att.com/oauth/v4/token";
+
+	/** Speech to text URL. */
+	private static final String SPEECH_TO_TEXT_URL = "https://api.att.com/speech/v3/speechToText";
 
 	// Fields
 	private double m_refresh;
@@ -36,7 +41,7 @@ public class SpeechRec extends Thread {
 	
 	private Lock lock;
 
-	public SpeechRec(double refresh, PipedInputStream audioData) throws Exception {
+	public SpeechRec(double refresh, PipedInputStream audioData) {
 		m_refresh = refresh;
 		m_audioData = audioData;
 		
@@ -87,9 +92,8 @@ public class SpeechRec extends Thread {
 	}
 
 	// make an oauth request
-	private String getOAuth() throws Exception {		
-		String url = "https://api.att.com/oauth/v4/token";
-	    URL obj = new URL(url);
+	private String getOAuth() throws Exception {
+	    URL obj = new URL(OAUTH_URL);
 		
 		HttpsURLConnection con;
 		con = (HttpsURLConnection) obj.openConnection();
@@ -108,8 +112,7 @@ public class SpeechRec extends Thread {
 		wr.flush();
 		wr.close();
  
-		BufferedReader in = new BufferedReader(
-		        new InputStreamReader(con.getInputStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
 		StringBuffer response = new StringBuffer();
  
@@ -124,20 +127,18 @@ public class SpeechRec extends Thread {
 	}
 
 	// make a request for text to att
-	private String getTextFromSpeech(String authToken) throws Exception {		
-		String url = "https://api.att.com/speech/v3/speechToText";
-	    URL obj = new URL(url);
+	private String getTextFromSpeech(String authToken) throws Exception {
+	    URL url = new URL(SPEECH_TO_TEXT_URL);
 		
-		HttpsURLConnection con;
-		con = (HttpsURLConnection) obj.openConnection();
-		
-		//add request header
+		HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+
+		// add request header
 		con.setRequestMethod("POST");
 		con.setRequestProperty("Authorization", "Bearer " + authToken);
 		con.setRequestProperty("Accept", "application/json");
 		con.setRequestProperty("Content-Type", "audio/wav");
 		con.setRequestProperty("Transfer-Encoding", "chunked");
-		
+
 		byte[] data = m_byteArrayStream.toByteArray();
 
 		// Send post request
@@ -146,25 +147,24 @@ public class SpeechRec extends Thread {
 		wr.write(data);
 		wr.flush();
 		wr.close();
- 
-		BufferedReader in = new BufferedReader(
-		        new InputStreamReader(con.getInputStream()));
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
 		StringBuffer response = new StringBuffer();
- 
+
 		while ((inputLine = in.readLine()) != null) {
 			response.append(inputLine);
 		}
 		in.close();
-				 
+
 		JSONObject json = new JSONObject(response.toString());
 //		System.out.println(json.toString());
 		try {
 			String result = json.getJSONObject("Recognition").getJSONArray("NBest").getJSONObject(0).getString("ResultText");
+			System.out.println(result);
 			return result;
-		} catch (Exception e) {
+		} catch (JSONException e) {
 			return "";
 		}
-	}	
-	
+	}
 }
