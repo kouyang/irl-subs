@@ -15,6 +15,7 @@ import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -76,6 +77,8 @@ public class WebCamAppLauncher extends Application {
 	private Button btnCamreaStart;
 	private Button btnCameraDispose;
 
+	private static final double SPACING = 50;
+	
 	@Override
 	public void start(final Stage primaryStage) {
 		primaryStage
@@ -89,8 +92,10 @@ public class WebCamAppLauncher extends Application {
 		topPane.setPrefHeight(40);
 		root.setTop(topPane);
 		webCamPane = new BorderPane();
-		webCamPane.setStyle("-fx-background-color: #ccc;");
+		webCamPane.setStyle("-fx-background-color: #000;");
 		imgWebCamHBox = new HBox();
+		imgWebCamHBox.setPadding(new Insets(SPACING));
+		imgWebCamHBox.setSpacing(SPACING * 2);
 		imgWebCamCapturedImage1 = new ImageView();
 		imgWebCamCapturedImage2 = new ImageView();
 		imgWebCamHBox.setAlignment(Pos.CENTER);
@@ -120,7 +125,10 @@ public class WebCamAppLauncher extends Application {
 		primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent ke) {
-				if (ke.getCode() == KeyCode.F11) {
+				if (ke.getCode() == KeyCode.ESCAPE) {
+					System.exit(0);
+				}
+				if (ke.getCode() == KeyCode.F) {
 					primaryStage.setFullScreen(!primaryStage.isFullScreen());
 				}
 			}
@@ -139,8 +147,8 @@ public class WebCamAppLauncher extends Application {
 	protected void setImageViewSize() {
 		DoubleProperty height = new SimpleDoubleProperty();
 		DoubleProperty width = new SimpleDoubleProperty();
-		height.bind(webCamPane.heightProperty());
-		width.bind(webCamPane.widthProperty().divide(2));
+		height.bind(webCamPane.heightProperty().subtract(SPACING * 2));
+		width.bind(webCamPane.widthProperty().divide(2).subtract(SPACING * 2));
 
 		imgWebCamCapturedImage1.fitHeightProperty().bind(height);
 		imgWebCamCapturedImage1.fitWidthProperty().bind(width);
