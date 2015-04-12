@@ -233,16 +233,27 @@ public class WebCamAppLauncher extends Application {
 				System.out.println("theta is " + dNewVal + ", move to " + xNew);
 				
 				Path path1 = new Path();
-				path1.getElements().add(new MoveTo(dot1.getTranslateX(), dot1.getTranslateY()));
-				path1.getElements().add(new HLineTo(dot1.getTranslateX() - xNew));
+				MoveTo moveTo1 = new MoveTo(dot1.getTranslateX(), dot1.getTranslateY());
+				moveTo1.setAbsolute(true);
+				HLineTo hlineTo1 = new HLineTo(SPACING + width / 2 - xNew);
+				hlineTo1.setAbsolute(true);
+				path1.getElements().addAll(moveTo1, hlineTo1);
+//				path1.getElements().add(new MoveTo(dot1.getTranslateX(), dot1.getTranslateY()));
+//				path1.getElements().add(new HLineTo(dot1.getTranslateX() - xNew));
 				PathTransition trans1 = new PathTransition();
 				trans1.setDuration(Duration.millis(500));
 				trans1.setPath(path1);
 				trans1.setNode(dot1);
 				
 				Path path2 = new Path();
-				path2.getElements().add(new MoveTo(dot2.getTranslateX(), dot2.getTranslateY()));
-				path2.getElements().add(new HLineTo(dot2.getTranslateX() - xNew));
+				MoveTo moveTo2 = new MoveTo(dot2.getTranslateX(), dot2.getTranslateY());
+				moveTo2.setAbsolute(true);
+				HLineTo hlineTo2 = new HLineTo(3 * SPACING + width/2 - 50 - xNew);
+				hlineTo2.setAbsolute(true);
+				path2.getElements().addAll(moveTo2, hlineTo2);
+//				Path path2 = new Path();
+//				path2.getElements().add(new MoveTo(dot2.getTranslateX(), dot2.getTranslateY()));
+//				path2.getElements().add(new HLineTo(dot2.getTranslateX() - xNew));
 				PathTransition trans2 = new PathTransition();
 				trans2.setDuration(Duration.millis(500));
 				trans2.setPath(path2);
