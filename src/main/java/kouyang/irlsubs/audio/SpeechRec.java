@@ -81,6 +81,7 @@ public class SpeechRec extends Thread {
 
 				if (authToken == null)
 					authToken = getOAuth();
+				if (authToken == null) continue;
 				lock.lock();
 			    try {
 			    	m_text = getTextFromSpeech(authToken);
@@ -178,7 +179,14 @@ public class SpeechRec extends Thread {
 		wr.flush();
 		wr.close();
 
-		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		BufferedReader in = null;
+		
+		try {
+			in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		} catch(Exception e) {
+			System.out.println("Exception!");
+			return null;
+		}
 		String inputLine;
 		StringBuffer response = new StringBuffer();
 

@@ -35,6 +35,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.HLineTo;
@@ -49,6 +50,8 @@ import javafx.util.Duration;
 import kouyang.irlsubs.audio.MainAudio;
 import kouyang.irlsubs.audio.OffsetCalc;
 import kouyang.irlsubs.audio.SpeechRec;
+
+import javafx.geometry.Insets;
 
 import com.github.sarxos.webcam.Webcam;
 
@@ -153,7 +156,7 @@ public class WebCamAppLauncher extends Application {
 		con2.setPercentWidth(50);
 		viewport.getColumnConstraints().addAll(con1, con2);
 		RowConstraints row = new RowConstraints();
-		row.setPercentHeight(25);
+		row.setPercentHeight(20);
 		viewport.getRowConstraints().add(row);
 		
 		imgWebCamCapturedImage1 = new ImageView();
@@ -162,8 +165,12 @@ public class WebCamAppLauncher extends Application {
 		text1 = new Text();
 		text1.setFont(Font.font("Verdana", FontPosture.REGULAR, 24));
 		text1.setFill(Color.WHITE);
-		GridPane.setHalignment(text1, HPos.CENTER);
-		viewport.add(text1, 0, 2);
+		VBox vbox1 = new VBox();
+		vbox1.setPadding(new Insets(0, 0, 0, 60));
+		vbox1.getChildren().add(text1);
+		
+//		GridPane.setHalignment(text1, HPos.CENTER);
+		viewport.add(vbox1, 0, 2);
 		
 		subtitleProp = text1.textProperty();
 		
@@ -174,8 +181,10 @@ public class WebCamAppLauncher extends Application {
 		text2.setFont(Font.font("Verdana", FontPosture.REGULAR, 24));
 		text2.textProperty().bind(text1.textProperty());
 		text2.setFill(Color.WHITE);
-		GridPane.setHalignment(text2, HPos.CENTER);
-		viewport.add(text2, 1, 2);
+		VBox vbox2 = new VBox();
+		vbox2.setPadding(new Insets(0, 0, 0, 60));
+		vbox2.getChildren().add(text2);
+		viewport.add(vbox2, 1, 2);
 		root.setCenter(viewport);
 		
 		createTopPanel();
@@ -221,9 +230,11 @@ public class WebCamAppLauncher extends Application {
 				double xOld = Math.tan(Math.toRadians(dOldVal)) * d;
 				double xNew = Math.tan(Math.toRadians(dNewVal)) * d;
 				
+				System.out.println("theta is " + dNewVal + ", move to " + xNew);
+				
 				Path path1 = new Path();
 				path1.getElements().add(new MoveTo(dot1.getTranslateX(), dot1.getTranslateY()));
-				path1.getElements().add(new HLineTo(dot1.getTranslateX() + (xOld - xNew)));
+				path1.getElements().add(new HLineTo(dot1.getTranslateX() - xNew));
 				PathTransition trans1 = new PathTransition();
 				trans1.setDuration(Duration.millis(500));
 				trans1.setPath(path1);
@@ -231,7 +242,7 @@ public class WebCamAppLauncher extends Application {
 				
 				Path path2 = new Path();
 				path2.getElements().add(new MoveTo(dot2.getTranslateX(), dot2.getTranslateY()));
-				path2.getElements().add(new HLineTo(dot2.getTranslateX() + (xOld - xNew)));
+				path2.getElements().add(new HLineTo(dot2.getTranslateX() - xNew));
 				PathTransition trans2 = new PathTransition();
 				trans2.setDuration(Duration.millis(500));
 				trans2.setPath(path2);
@@ -284,16 +295,19 @@ public class WebCamAppLauncher extends Application {
 		imgWebCamCapturedImage1.setPreserveRatio(true);
 //		imgWebCamCapturedImage1.fitHeightProperty().bind(height);
 		imgWebCamCapturedImage1.fitWidthProperty().bind(width);
-		text1.wrappingWidthProperty().bind(width);
+		text1.wrappingWidthProperty().bind(width.subtract(60));
 		
 
 		imgWebCamCapturedImage2.setPreserveRatio(true);
 //		imgWebCamCapturedImage2.fitHeightProperty().bind(height);
 		imgWebCamCapturedImage2.fitWidthProperty().bind(width);
-		text2.wrappingWidthProperty().bind(width);
+		text2.wrappingWidthProperty().bind(width.subtract(60));
 		
 		dot1.setTranslateX(width.get());
 		dot2.setTranslateX(width.get());
+		
+//		dot1.setCenterX(SPACING + width.get() / 1);
+//		dot2.setCenterX(3 * SPACING + width.get() / 1);
 	}
 
 	private void createTopPanel() { 
@@ -481,15 +495,15 @@ public class WebCamAppLauncher extends Application {
 
 	private void startSpeechRecognition() {
 		// Initialize 2 Streams
-		mainAudio = new MainAudio(1);
+		mainAudio = new MainAudio(2);
 
 		PipedInputStream[] streams = mainAudio.initialize();
 
 		offsetCalc = new OffsetCalc(0.0762, 1.0, streams[0], angleProp);
-//		speechRec = new SpeechRec(5.0, streams[1], subtitleProp);
+		speechRec = new SpeechRec(5.0, streams[1], subtitleProp);
 //
 		mainAudio.start();
 		offsetCalc.start();
-//		speechRec.start();
+		speechRec.start();
 	}
 }
