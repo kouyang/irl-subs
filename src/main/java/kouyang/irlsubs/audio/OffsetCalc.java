@@ -8,6 +8,9 @@ import java.nio.ByteOrder;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.application.Platform;
+
 
 
 import org.apache.commons.math3.complex.Complex;
@@ -26,19 +29,20 @@ public class OffsetCalc extends Thread {
 	private double m_offset;
 	
 	private boolean m_stopped;
-	
-	private Lock lock;
 
 	PipedInputStream m_audioData;
+	
+	DoubleProperty m_doubleProp;
 
 
-	public OffsetCalc(double micDistance, double refresh, PipedInputStream audioData) {
+	public OffsetCalc(double micDistance, double refresh, PipedInputStream audioData, DoubleProperty doubleProp) {
 		m_refresh = refresh;
 		m_micDistance = micDistance;
 		m_audioData = audioData;
 		m_offset = 0;
 		
-		lock = new ReentrantLock();
+		m_doubleProp = doubleProp;
+		
 		m_stopped = false;
 	}
 	
@@ -119,6 +123,15 @@ public class OffsetCalc extends Thread {
 		    	if (ratio > 1) ratio = 1;
 		    	if (ratio < -1) ratio = -1;
 		    	m_offset = Math.toDegrees(Math.asin(ratio));
+		    	if (m_offset < -40) m_offset = -40;
+		    	if (m_offset > 40) m_offset = 40;
+		    	
+		    	Platform.runLater(new Runnable() {
+		    		@Override
+		    		public void run() {
+		    			m_doubleProp.set(m_offset);
+		    		}
+		    	});
 		}
 	}
 }

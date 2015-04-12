@@ -126,6 +126,9 @@ public class WebCamAppLauncher extends Application {
 	private Button btnCamreaStop;
 	private Button btnCamreaStart;
 	private Button btnCameraDispose;
+	
+	final Circle dot1 = new Circle(10);
+	final Circle dot2 = new Circle(10);
 
 	private static final double SPACING = 20;
 	
@@ -193,8 +196,6 @@ public class WebCamAppLauncher extends Application {
 //		primaryStage.setFullScreen(true);
 		
 		angleProp = new SimpleDoubleProperty();
-		final Circle dot1 = new Circle(10);
-		final Circle dot2 = new Circle(10);
 		dot1.setFill(Color.SKYBLUE);
 		dot2.setFill(Color.SKYBLUE);
 		viewport.add(dot1, 0, 0);
@@ -210,25 +211,34 @@ public class WebCamAppLauncher extends Application {
 			public void changed(ObservableValue<? extends Number> ov,
 					Number oldVal, Number newVal) {
 				System.out.println(String.format("change from %f to %f", oldVal.doubleValue(), newVal.doubleValue()));
-//				
-//				Path path1 = new Path();
-//				path1.getElements().add(new MoveTo(dot1.getTranslateX(), dot1.getTranslateY()));
-//				path1.getElements().add(new HLineTo(dot1.getTranslateX() + 100 * newVal.doubleValue()));
-//				PathTransition trans1 = new PathTransition();
-//				trans1.setDuration(Duration.millis(500));
-//				trans1.setPath(path1);
-//				trans1.setNode(dot1);
-//				
-//				Path path2 = new Path();
-//				path2.getElements().add(new MoveTo(dot2.getTranslateX(), dot2.getTranslateY()));
-//				path2.getElements().add(new HLineTo(dot2.getTranslateX() + 100 * newVal.doubleValue()));
-//				PathTransition trans2 = new PathTransition();
-//				trans2.setDuration(Duration.millis(500));
-//				trans2.setPath(path2);
-//				trans2.setNode(dot2);
-//				
-//				trans1.play();
-//				trans2.play();
+				
+				double dOldVal = oldVal.doubleValue();
+				double dNewVal = newVal.doubleValue();
+				
+				
+				double width = (viewport.widthProperty().divide(2).subtract(SPACING * 2)).get();
+				double d = width / 2 / Math.tan(Math.toRadians(83.0 / 2));
+				double xOld = Math.tan(Math.toRadians(dOldVal)) * d;
+				double xNew = Math.tan(Math.toRadians(dNewVal)) * d;
+				
+				Path path1 = new Path();
+				path1.getElements().add(new MoveTo(dot1.getTranslateX(), dot1.getTranslateY()));
+				path1.getElements().add(new HLineTo(dot1.getTranslateX() + (xOld - xNew)));
+				PathTransition trans1 = new PathTransition();
+				trans1.setDuration(Duration.millis(500));
+				trans1.setPath(path1);
+				trans1.setNode(dot1);
+				
+				Path path2 = new Path();
+				path2.getElements().add(new MoveTo(dot2.getTranslateX(), dot2.getTranslateY()));
+				path2.getElements().add(new HLineTo(dot2.getTranslateX() + (xOld - xNew)));
+				PathTransition trans2 = new PathTransition();
+				trans2.setDuration(Duration.millis(500));
+				trans2.setPath(path2);
+				trans2.setNode(dot2);
+				
+				trans1.play();
+				trans2.play();
 			}
 		});
 		
@@ -281,6 +291,9 @@ public class WebCamAppLauncher extends Application {
 //		imgWebCamCapturedImage2.fitHeightProperty().bind(height);
 		imgWebCamCapturedImage2.fitWidthProperty().bind(width);
 		text2.wrappingWidthProperty().bind(width);
+		
+		dot1.setTranslateX(width.get());
+		dot2.setTranslateX(width.get());
 	}
 
 	private void createTopPanel() { 
@@ -468,7 +481,7 @@ public class WebCamAppLauncher extends Application {
 
 	private void startSpeechRecognition() {
 		// Initialize 2 Streams
-		mainAudio = new MainAudio(2);
+		mainAudio = new MainAudio(1);
 
 		PipedInputStream[] streams = mainAudio.initialize();
 
