@@ -3,6 +3,7 @@ import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.PipedInputStream;
 
+import javafx.animation.PathTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
@@ -21,6 +22,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -34,11 +36,16 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.HLineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 import kouyang.irlsubs.audio.MainAudio;
 import kouyang.irlsubs.audio.OffsetCalc;
 import kouyang.irlsubs.audio.SpeechRec;
@@ -55,6 +62,7 @@ public class WebCamAppLauncher extends Application {
 	private boolean webcamSelected = false;
 
 	private StringProperty subtitleProp;
+	private DoubleProperty angleProp;
 	
 	// Audio CLasses
 	private MainAudio mainAudio;
@@ -184,6 +192,46 @@ public class WebCamAppLauncher extends Application {
 		primaryStage.centerOnScreen();
 //		primaryStage.setFullScreen(true);
 		
+		angleProp = new SimpleDoubleProperty();
+		final Circle dot1 = new Circle(10);
+		final Circle dot2 = new Circle(10);
+		dot1.setFill(Color.SKYBLUE);
+		dot2.setFill(Color.SKYBLUE);
+		viewport.add(dot1, 0, 0);
+		viewport.add(dot2, 1, 0);
+		dot1.setTranslateY(-5);
+		dot2.setTranslateY(-5);
+		GridPane.setValignment(dot1, VPos.BOTTOM);
+		GridPane.setValignment(dot2, VPos.BOTTOM);
+		
+		
+		angleProp.addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> ov,
+					Number oldVal, Number newVal) {
+				System.out.println(String.format("change from %f to %f", oldVal.doubleValue(), newVal.doubleValue()));
+//				
+//				Path path1 = new Path();
+//				path1.getElements().add(new MoveTo(dot1.getTranslateX(), dot1.getTranslateY()));
+//				path1.getElements().add(new HLineTo(dot1.getTranslateX() + 100 * newVal.doubleValue()));
+//				PathTransition trans1 = new PathTransition();
+//				trans1.setDuration(Duration.millis(500));
+//				trans1.setPath(path1);
+//				trans1.setNode(dot1);
+//				
+//				Path path2 = new Path();
+//				path2.getElements().add(new MoveTo(dot2.getTranslateX(), dot2.getTranslateY()));
+//				path2.getElements().add(new HLineTo(dot2.getTranslateX() + 100 * newVal.doubleValue()));
+//				PathTransition trans2 = new PathTransition();
+//				trans2.setDuration(Duration.millis(500));
+//				trans2.setPath(path2);
+//				trans2.setNode(dot2);
+//				
+//				trans1.play();
+//				trans2.play();
+			}
+		});
+		
 		primaryStage.addEventHandler(KeyEvent.KEY_PRESSED,
 				new EventHandler<KeyEvent>() {
 					@Override
@@ -227,7 +275,6 @@ public class WebCamAppLauncher extends Application {
 //		imgWebCamCapturedImage1.fitHeightProperty().bind(height);
 		imgWebCamCapturedImage1.fitWidthProperty().bind(width);
 		text1.wrappingWidthProperty().bind(width);
-//		textPane1.prefWidt
 		
 
 		imgWebCamCapturedImage2.setPreserveRatio(true);
@@ -425,11 +472,11 @@ public class WebCamAppLauncher extends Application {
 
 		PipedInputStream[] streams = mainAudio.initialize();
 
-		offsetCalc = new OffsetCalc(0.0762, 1.0, streams[0]);
-		speechRec = new SpeechRec(5.0, streams[1], subtitleProp);
-
+		offsetCalc = new OffsetCalc(0.0762, 1.0, streams[0], angleProp);
+//		speechRec = new SpeechRec(5.0, streams[1], subtitleProp);
+//
 		mainAudio.start();
 		offsetCalc.start();
-		speechRec.start();
+//		speechRec.start();
 	}
 }
