@@ -1,0 +1,115 @@
+package kouyang.irlsubs.audio;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PipedInputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.AudioFileFormat.Type;
+
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
+
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import java.net.URL;
+
+public class SpeechRec extends Thread {
+
+	// Fields
+	private double m_refresh;
+	private boolean m_stopped;
+	
+	private PipedInputStream m_audioData;
+	
+	final static float fSampleRate = 48000.0F; // 16 kHz Sample Rate
+	final static int iBytesPerSample = 2; // 16-bit sample
+	final static int channels       = 2;  // Stereo Recording
+	final static int frameSize = channels * iBytesPerSample;
+
+	public SpeechRec(double refresh, PipedInputStream audioData) {
+		m_refresh = refresh;
+		m_audioData = audioData;
+		
+		m_stopped = false;
+	}
+
+	public void quit() {
+		m_stopped = true;
+	}
+	
+	@Override
+	public void run() {
+		try {
+			while(!m_stopped) {
+				// get audio stream
+				AudioInputStream ais = new AudioInputStream(m_audioData, new AudioFormat(
+						AudioFormat.Encoding.PCM_SIGNED,
+						fSampleRate * 2, iBytesPerSample * 8, 1, frameSize / 2, fSampleRate * 2, false), (int)(frameSize / 2 * fSampleRate * 5));
+				AudioSystem.write(ais, Type.WAVE, new File("sound.wav"));
+				
+				// make oauth request
+				
+				String url = "https://api.att.com/oauth/v4/token";
+				
+			    URL obj;
+				obj = new URL(url);
+				
+				HttpsURLConnection con;
+				con = (HttpsURLConnection) obj.openConnection();
+				
+				//add request header
+				con.setRequestMethod("POST");
+				con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+				con.setRequestProperty("Accept", "application/json");
+				
+				String urlParameters = "client_id=rj2fdxuciodyjy1qkioystmjbsjpgdnl&client_secret=0vbugp96se0mww44uc7xvuhjs2qgwohf&grant_type=client_credentials&scope=SPEECH";
+
+				// Send post request
+				con.setDoOutput(true);
+				DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+				wr.writeBytes(urlParameters);
+				wr.flush();
+				wr.close();
+
+				int responseCode = con.getResponseCode();
+				System.out.println("\nSending 'POST' request to URL : " + url);
+				System.out.println("Post parameters : " + urlParameters);
+				System.out.println("Response Code : " + responseCode);
+		 
+				BufferedReader in = new BufferedReader(
+				        new InputStreamReader(con.getInputStream()));
+				String inputLine;
+				StringBuffer response = new StringBuffer();
+		 
+				while ((inputLine = in.readLine()) != null) {
+					response.append(inputLine);
+				}
+				in.close();
+						 
+				//print result
+				System.out.println(response.toString());			
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
+	
+}

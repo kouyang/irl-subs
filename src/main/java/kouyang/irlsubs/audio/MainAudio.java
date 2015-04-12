@@ -1,10 +1,14 @@
 package kouyang.irlsubs.audio;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
@@ -64,6 +68,10 @@ public class MainAudio extends Thread {
 		m_stopped = true;
 	}
 	
+	public AudioFormat getFormat() {
+		return m_format;
+	}
+	
 	@Override
 	public void run() {
 		int numBytesRead;
@@ -91,21 +99,24 @@ public class MainAudio extends Thread {
 		
 		PipedInputStream[] streams = m.initialize();
 		
-		OffsetCalc oc = new OffsetCalc(0.0762, 1.0, streams[0]);
+		//OffsetCalc oc = new OffsetCalc(0.0762, 1.0, streams[0]);
+		SpeechRec sr = new SpeechRec(5.0, streams[0]);
 		
 		m.start();
-		oc.start();
-		try {
-			while(System.in.available() < 1) {
-				Thread.sleep(1000);
-				System.out.println("Angle: " + oc.GetSourceAngle());
-			}
+		sr.start();
+		/* try {
+			Thread.sleep(5000);
+			
+			AudioInputStream ais = new AudioInputStream(streams[0], new AudioFormat(
+					AudioFormat.Encoding.PCM_SIGNED,
+					fSampleRate * 2, iBytesPerSample * 8, 1, frameSize / 2, fSampleRate * 2, false), (int)(frameSize / 2 * fSampleRate * 5));
+			AudioSystem.write(ais, Type.WAVE, new File("sound.wav"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			oc.quit();
 			m.quit();
-		}
+		} */
+		
 		System.out.println("Ending...");
 	}
 
