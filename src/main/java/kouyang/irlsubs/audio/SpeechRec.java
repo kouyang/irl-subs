@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.net.URL;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.sound.sampled.AudioFileFormat.Type;
@@ -31,14 +33,16 @@ public class SpeechRec extends Thread {
 	final static int frameSize = channels * iBytesPerSample;
 	
 	private String authToken;
+	private String text;
+	
+	private Lock lock;
 
 	public SpeechRec(double refresh, PipedInputStream audioData) throws Exception {
 		m_refresh = refresh;
 		m_audioData = audioData;
 		
 		m_stopped = false;
-
-		m_byteArrayStream = new ByteArrayOutputStream();
+		lock = new ReentrantLock();
 	}
 
 	public void quit() {
@@ -49,6 +53,7 @@ public class SpeechRec extends Thread {
 	public void run() {
 		try {
 			while(!m_stopped) {
+				m_byteArrayStream = new ByteArrayOutputStream();
 				// get audio stream
 				AudioInputStream ais = new AudioInputStream(m_audioData, new AudioFormat(
 						AudioFormat.Encoding.PCM_SIGNED,
@@ -147,10 +152,14 @@ public class SpeechRec extends Thread {
 		in.close();
 				 
 		JSONObject json = new JSONObject(response.toString());
-		System.out.println(json.toString());
-		String result = json.getJSONObject("Recognition").getJSONArray("NBest").getJSONObject(0).getString("ResultText");
-		System.out.println("The text was: " + result);
-		return result;
+//		System.out.println(json.toString());
+		try {
+			String result = json.getJSONObject("Recognition").getJSONArray("NBest").getJSONObject(0).getString("ResultText");
+			System.out.println("The text was: " + result);
+			return result;
+		} catch (Exception e) {
+			return "";
+		}
 	}	
 	
 }
