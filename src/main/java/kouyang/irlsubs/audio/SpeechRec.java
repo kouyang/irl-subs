@@ -24,8 +24,8 @@ public class SpeechRec extends Thread {
 	private double m_refresh;
 	private boolean m_stopped;
 	private ByteArrayOutputStream m_byteArrayStream;
-	
 	private PipedInputStream m_audioData;
+	private String m_text;
 	
 	final static float fSampleRate = 48000.0F; // 16 kHz Sample Rate
 	final static int iBytesPerSample = 2; // 16-bit sample
@@ -33,7 +33,6 @@ public class SpeechRec extends Thread {
 	final static int frameSize = channels * iBytesPerSample;
 	
 	private String authToken;
-	private String text;
 	
 	private Lock lock;
 
@@ -42,6 +41,7 @@ public class SpeechRec extends Thread {
 		m_audioData = audioData;
 		
 		m_stopped = false;
+		m_text = "";
 		lock = new ReentrantLock();
 	}
 
@@ -57,21 +57,37 @@ public class SpeechRec extends Thread {
 				// get audio stream
 				AudioInputStream ais = new AudioInputStream(m_audioData, new AudioFormat(
 						AudioFormat.Encoding.PCM_SIGNED,
-						fSampleRate * 2, iBytesPerSample * 8, 1, frameSize / 2, fSampleRate * 2, false), (int)(frameSize / 2 * fSampleRate * 5));
+						fSampleRate * 2, iBytesPerSample * 8, 1, frameSize / 2, fSampleRate * 2, false), (int)(frameSize / 2 * fSampleRate * m_refresh));
 				AudioSystem.write(ais, Type.WAVE, m_byteArrayStream);
 
 				if (authToken == null)
 					authToken = getOAuth();
-				getText(authToken);
+				lock.lock();
+			    try {
+			    	m_text = getTextFromSpeech(authToken);
+			    } finally {
+			    	lock.unlock();
+			    }
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 	}
+	
+	public String getText() {
+		lock.lock();
+		String ret;
+	    try {
+	    	ret = m_text;
+	    } finally {
+	    	lock.unlock();
+	    }
+	    return ret;
+	}
 
 	// make an oauth request
-	public String getOAuth() throws Exception {		
+	private String getOAuth() throws Exception {		
 		String url = "https://api.att.com/oauth/v4/token";
 	    URL obj = new URL(url);
 		
@@ -91,11 +107,6 @@ public class SpeechRec extends Thread {
 		wr.writeBytes(data);
 		wr.flush();
 		wr.close();
-
-		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + data);
-		System.out.println("Response Code : " + responseCode);
  
 		BufferedReader in = new BufferedReader(
 		        new InputStreamReader(con.getInputStream()));
@@ -113,7 +124,7 @@ public class SpeechRec extends Thread {
 	}
 
 	// make a request for text to att
-	public String getText(String authToken) throws Exception {		
+	private String getTextFromSpeech(String authToken) throws Exception {		
 		String url = "https://api.att.com/speech/v3/speechToText";
 	    URL obj = new URL(url);
 		
@@ -135,11 +146,6 @@ public class SpeechRec extends Thread {
 		wr.write(data);
 		wr.flush();
 		wr.close();
-
-		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + data);
-		System.out.println("Response Code : " + responseCode);
  
 		BufferedReader in = new BufferedReader(
 		        new InputStreamReader(con.getInputStream()));
@@ -155,7 +161,6 @@ public class SpeechRec extends Thread {
 //		System.out.println(json.toString());
 		try {
 			String result = json.getJSONObject("Recognition").getJSONArray("NBest").getJSONObject(0).getString("ResultText");
-			System.out.println("The text was: " + result);
 			return result;
 		} catch (Exception e) {
 			return "";
