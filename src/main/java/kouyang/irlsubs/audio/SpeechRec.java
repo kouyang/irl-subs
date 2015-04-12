@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -24,6 +25,9 @@ public class SpeechRec extends Thread {
 
 	/** Speech to text URL. */
 	private static final String SPEECH_TO_TEXT_URL = "https://api.att.com/speech/v3/speechToText";
+
+	/** Translation URL. */
+	private static final String TRANSLATION_URL = "https://translate.yandex.net/api/v1.5/tr.json/translate";
 
 	// Fields
 	private double m_refresh;
@@ -70,6 +74,7 @@ public class SpeechRec extends Thread {
 				lock.lock();
 			    try {
 			    	m_text = getTextFromSpeech(authToken);
+			    	m_text = translateText("fr");
 			    } finally {
 			    	lock.unlock();
 			    }
@@ -167,4 +172,47 @@ public class SpeechRec extends Thread {
 			return "";
 		}
 	}
+	
+	private String translateText(String lang) throws Exception {
+	    URL obj = new URL(TRANSLATION_URL);
+		
+		HttpsURLConnection con;
+		con = (HttpsURLConnection) obj.openConnection();
+		
+		//add request header
+		con.setRequestMethod("POST");
+
+		String text = URLEncoder.encode(m_text, "UTF-8");		
+		
+		String data = "key=trnsl.1.1.20150412T085953Z.f3946b13feb0ece5.44c6a33ca802483d24ded334d8ff52b463078714"
+				+ "&lang=en-" + lang + "&text=" + text;
+		
+		// Send post request
+		con.setDoOutput(true);
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(data);
+		wr.flush();
+		wr.close();
+ 
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+ 
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+				 
+		JSONObject json = new JSONObject(response.toString());
+//		System.out.println(json.toString());
+		try {
+			String result = json.getJSONArray("text").getString(0);
+			System.out.println(result);
+			return result;
+		} catch (Exception e) {
+			return "";
+		}
+	}	
+
+
 }
