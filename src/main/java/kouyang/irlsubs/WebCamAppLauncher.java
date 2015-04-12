@@ -16,7 +16,7 @@ import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
+import javafx.geometry.HPos;
 import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -28,8 +28,14 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -38,8 +44,8 @@ import com.github.sarxos.webcam.Webcam;
 public class WebCamAppLauncher extends Application {
 
 	/** Dimensions of the webcam. */
-	private static final Dimension WEBCAM_DIMENSIONS = new Dimension(1280, 720);
-//	private static final Dimension WEBCAM_DIMENSIONS = new Dimension(1920, 1080);
+	private static final int SCALE = 30;
+	private static final Dimension WEBCAM_DIMENSIONS = new Dimension(SCALE * 16, SCALE * 9);
 
 	private class WebCamInfo {
 
@@ -72,23 +78,23 @@ public class WebCamAppLauncher extends Application {
 	private FlowPane topPane;
 	private BorderPane root;
 	private String cameraListPromptText = "Choose Camera";
-	private HBox imgWebCamHBox;
 	private ImageView imgWebCamCapturedImage1, imgWebCamCapturedImage2;
+	private Text text1, text2;
 	private Webcam webCam = null;
 	private boolean stopCamera = false;
 	private BufferedImage grabbedImage;
 	private ObjectProperty<Image> imageProperty = new SimpleObjectProperty<Image>();
-	private BorderPane webCamPane;
+	private GridPane viewport;
 	private Button btnCamreaStop;
 	private Button btnCamreaStart;
 	private Button btnCameraDispose;
 
-	private static final double SPACING = 50;
+	private static final double SPACING = 20;
 	
 	@Override
 	public void start(final Stage primaryStage) {
 		primaryStage
-				.setTitle("Connecting Camera Device Using Webcam Capture API");
+				.setTitle("IRL Subs!");
 
 		root = new BorderPane();
 		topPane = new FlowPane();
@@ -97,19 +103,36 @@ public class WebCamAppLauncher extends Application {
 		topPane.setOrientation(Orientation.HORIZONTAL);
 		topPane.setPrefHeight(40);
 		root.setTop(topPane);
-		webCamPane = new BorderPane();
-		webCamPane.setStyle("-fx-background-color: #000;");
-		imgWebCamHBox = new HBox();
-		imgWebCamHBox.setPadding(new Insets(SPACING));
-		imgWebCamHBox.setSpacing(SPACING * 2);
+		
+		viewport = new GridPane();
+		viewport.setStyle("-fx-background-color: #000;");
+		ColumnConstraints con1 = new ColumnConstraints();
+		con1.setPercentWidth(50);
+		ColumnConstraints con2 = new ColumnConstraints();
+		con2.setPercentWidth(50);
+		viewport.getColumnConstraints().addAll(con1, con2);
+		RowConstraints row = new RowConstraints();
+		row.setPercentHeight(25);
+		viewport.getRowConstraints().add(row);
+		
 		imgWebCamCapturedImage1 = new ImageView();
+		GridPane.setHalignment(imgWebCamCapturedImage1, HPos.CENTER);
+		viewport.add(imgWebCamCapturedImage1, 0, 1);
+		text1 = new Text();
+		text1.setFont(Font.font("Verdana", FontPosture.REGULAR, 24));
+		text1.setFill(Color.WHITE);
+		GridPane.setHalignment(text1, HPos.CENTER);
+		viewport.add(text1, 0, 2);
+		
 		imgWebCamCapturedImage2 = new ImageView();
-		imgWebCamHBox.setAlignment(Pos.CENTER);
-		imgWebCamHBox.getChildren().addAll(imgWebCamCapturedImage1,
-				imgWebCamCapturedImage2);
-		BorderPane.setAlignment(imgWebCamHBox, Pos.BOTTOM_CENTER);
-		webCamPane.setCenter(imgWebCamHBox);
-		root.setCenter(webCamPane);
+		GridPane.setHalignment(imgWebCamCapturedImage2, HPos.CENTER);
+		viewport.add(imgWebCamCapturedImage2, 1, 1);
+		text2 = new Text();
+		text2.setFont(Font.font("Verdana", FontPosture.REGULAR, 24));
+		text2.setFill(Color.WHITE);
+		GridPane.setHalignment(text2, HPos.CENTER);
+		viewport.add(text2, 1, 2);
+		root.setCenter(viewport);
 		
 		createTopPanel();
 		bottomCameraControlPane = new FlowPane();
@@ -123,8 +146,8 @@ public class WebCamAppLauncher extends Application {
 		root.setBottom(bottomCameraControlPane);
 
 		primaryStage.setScene(new Scene(root));
-		primaryStage.setWidth(WEBCAM_DIMENSIONS.getWidth());
-		primaryStage.setHeight(WEBCAM_DIMENSIONS.getHeight());
+		primaryStage.setWidth(640);
+		primaryStage.setHeight(480);
 		primaryStage.centerOnScreen();
 //		primaryStage.setFullScreen(true);
 		
@@ -161,18 +184,23 @@ public class WebCamAppLauncher extends Application {
 	}
 
 	protected void setImageViewSize() {
-		DoubleProperty height = new SimpleDoubleProperty();
 		DoubleProperty width = new SimpleDoubleProperty();
-		height.bind(webCamPane.heightProperty().subtract(SPACING * 2));
-		width.bind(webCamPane.widthProperty().divide(2).subtract(SPACING * 2));
+		DoubleProperty height = new SimpleDoubleProperty();
+		width.bind(viewport.widthProperty().divide(2).subtract(SPACING * 2));
+		height.bind(width.divide(16).multiply(9));
 
-		imgWebCamCapturedImage1.fitHeightProperty().bind(height);
-		imgWebCamCapturedImage1.fitWidthProperty().bind(width);
+		
 		imgWebCamCapturedImage1.setPreserveRatio(true);
+//		imgWebCamCapturedImage1.fitHeightProperty().bind(height);
+		imgWebCamCapturedImage1.fitWidthProperty().bind(width);
+		text1.wrappingWidthProperty().bind(width);
+//		textPane1.prefWidt
+		
 
-		imgWebCamCapturedImage2.fitHeightProperty().bind(height);
-		imgWebCamCapturedImage2.fitWidthProperty().bind(width);
 		imgWebCamCapturedImage2.setPreserveRatio(true);
+//		imgWebCamCapturedImage2.fitHeightProperty().bind(height);
+		imgWebCamCapturedImage2.fitWidthProperty().bind(width);
+		text2.wrappingWidthProperty().bind(width);
 	}
 
 	private void createTopPanel() {
