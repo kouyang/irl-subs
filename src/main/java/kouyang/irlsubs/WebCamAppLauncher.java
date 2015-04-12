@@ -1,4 +1,5 @@
 package kouyang.irlsubs;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 
 import javafx.application.Application;
@@ -34,6 +35,10 @@ import javafx.stage.Stage;
 import com.github.sarxos.webcam.Webcam;
 
 public class WebCamAppLauncher extends Application {
+
+	/** Dimensions of the webcam. */
+	private static final Dimension WEBCAM_DIMENSIONS = new Dimension(1280, 720);
+//	private static final Dimension WEBCAM_DIMENSIONS = new Dimension(1920, 1080);
 
 	private class WebCamInfo {
 
@@ -117,8 +122,8 @@ public class WebCamAppLauncher extends Application {
 		root.setBottom(bottomCameraControlPane);
 
 		primaryStage.setScene(new Scene(root));
-		primaryStage.setWidth(1200);
-		primaryStage.setHeight(720);
+		primaryStage.setWidth(WEBCAM_DIMENSIONS.getWidth());
+		primaryStage.setHeight(WEBCAM_DIMENSIONS.getHeight());
 		primaryStage.centerOnScreen();
 //		primaryStage.setFullScreen(true);
 		
@@ -207,6 +212,8 @@ public class WebCamAppLauncher extends Application {
 				}
 
 				webCam = Webcam.getWebcams().get(webCamIndex);
+				webCam.setCustomViewSizes(new Dimension[] { WEBCAM_DIMENSIONS });
+				webCam.setViewSize(WEBCAM_DIMENSIONS);
 				webCam.open();
 
 				startWebCamStream();
