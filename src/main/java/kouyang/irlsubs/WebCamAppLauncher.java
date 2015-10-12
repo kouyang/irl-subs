@@ -60,6 +60,8 @@ public class WebCamAppLauncher extends Application {
 	/** Dimensions of the webcam. */
 	private static final int SCALE = 30;
 	private static final Dimension WEBCAM_DIMENSIONS = new Dimension(SCALE * 16, SCALE * 9);
+	
+	private static final int INDENT = 140;
 
 	// has a webcam been selected?
 	private boolean webcamSelected = false;
@@ -166,7 +168,7 @@ public class WebCamAppLauncher extends Application {
 		text1.setFont(Font.font("Verdana", FontPosture.REGULAR, 24));
 		text1.setFill(Color.WHITE);
 		VBox vbox1 = new VBox();
-		vbox1.setPadding(new Insets(0, 0, 0, 60));
+		vbox1.setPadding(new Insets(0, 0, 0, INDENT));
 		vbox1.getChildren().add(text1);
 		
 //		GridPane.setHalignment(text1, HPos.CENTER);
@@ -182,7 +184,7 @@ public class WebCamAppLauncher extends Application {
 		text2.textProperty().bind(text1.textProperty());
 		text2.setFill(Color.WHITE);
 		VBox vbox2 = new VBox();
-		vbox2.setPadding(new Insets(0, 0, 0, 60));
+		vbox2.setPadding(new Insets(0, 0, 0, INDENT));
 		vbox2.getChildren().add(text2);
 		viewport.add(vbox2, 1, 2);
 		root.setCenter(viewport);
@@ -306,13 +308,13 @@ public class WebCamAppLauncher extends Application {
 		imgWebCamCapturedImage1.setPreserveRatio(true);
 //		imgWebCamCapturedImage1.fitHeightProperty().bind(height);
 		imgWebCamCapturedImage1.fitWidthProperty().bind(width);
-		text1.wrappingWidthProperty().bind(width.subtract(60));
+		text1.wrappingWidthProperty().bind(width.subtract(INDENT));
 		
 
 		imgWebCamCapturedImage2.setPreserveRatio(true);
 //		imgWebCamCapturedImage2.fitHeightProperty().bind(height);
 		imgWebCamCapturedImage2.fitWidthProperty().bind(width);
-		text2.wrappingWidthProperty().bind(width.subtract(60));
+		text2.wrappingWidthProperty().bind(width.subtract(INDENT));
 		
 		dot1.setTranslateX(width.get());
 		dot2.setTranslateX(width.get());
@@ -506,15 +508,15 @@ public class WebCamAppLauncher extends Application {
 
 	private void startSpeechRecognition() {
 		// Initialize 2 Streams
-		mainAudio = new MainAudio(2);
+		mainAudio = new MainAudio(1);
 
 		PipedInputStream[] streams = mainAudio.initialize();
 
-		offsetCalc = new OffsetCalc(0.0762, 1.0, streams[0], angleProp);
-		speechRec = new SpeechRec(5.0, streams[1], subtitleProp);
+		offsetCalc = new OffsetCalc(0.0762, 0.25, streams[0], angleProp);
+		//speechRec = new SpeechRec(3.0, streams[1], subtitleProp);
 //
 		mainAudio.start();
 		offsetCalc.start();
-		speechRec.start();
+		//speechRec.start();
 	}
 }

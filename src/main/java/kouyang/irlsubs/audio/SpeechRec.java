@@ -70,8 +70,8 @@ public class SpeechRec extends Thread {
 	
 	@Override
 	public void run() {
-		try {
-			while(!m_stopped) {
+		while(!m_stopped) {
+			try {
 				m_byteArrayStream = new ByteArrayOutputStream();
 				// get audio stream
 				AudioInputStream ais = new AudioInputStream(m_audioData, new AudioFormat(
@@ -91,10 +91,10 @@ public class SpeechRec extends Thread {
 			    } finally {
 			    	lock.unlock();
 			    }
+			} catch (Exception e) {
+				e.printStackTrace();
+	//			System.exit(1);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(1);
 		}
 	}
 

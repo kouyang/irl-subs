@@ -78,8 +78,8 @@ public class OffsetCalc extends Thread {
 	
 			ByteBuffer.wrap(soundBytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(soundSamples);
 	
-			double[] leftSamples = new double[soundSamples.length + 34816];
-			double[] rightSamples = new double[soundSamples.length + 34816];
+			double[] leftSamples = new double[soundSamples.length + 8704];
+			double[] rightSamples = new double[soundSamples.length + 8704];
 	
 			for(int i = 0; i < soundSamples.length / 2; i++) {
 				leftSamples[i] = (double)soundSamples[2 * i];
@@ -129,7 +129,7 @@ public class OffsetCalc extends Thread {
 		    	Platform.runLater(new Runnable() {
 		    		@Override
 		    		public void run() {
-		    			m_doubleProp.set(m_offset);
+		    			m_doubleProp.set(-1 * m_offset);
 		    		}
 		    	});
 		}
